@@ -18,34 +18,41 @@ from urllib.request import urlopen, Request
 
 # constants
 BASE_URL = "https://www.domain.com.au"
-N_PAGES = range(1, 5) # update this to your liking
+N_PAGES = range(1, 51) # update this to your liking
+bed_room = range(1,6)
 
 # begin code
 url_links = []
 property_metadata = defaultdict(dict)
 
 # generate list of urls to visit
-for page in N_PAGES:
-    url = BASE_URL + f"/rent/melbourne-region-vic/?sort=price-desc&page={page}"
-    print(f"Visiting {url}")
-    bs_object = BeautifulSoup(urlopen(Request(url, headers={'User-Agent':"PostmanRuntime/7.6.0"})), "lxml")
+for bed_room_count in bed_room:
+    for page in N_PAGES:
+        url = BASE_URL + f"/rent/?bedrooms={bed_room_count}-any&state=vic&page={page}"
+        print(f"Visiting {url}")
+        bs_object = BeautifulSoup(urlopen(Request(url, headers={'User-Agent':"PostmanRuntime/7.6.0"})), "lxml")
 
-    # find the unordered list (ul) elements which are the results, then
-    # find all href (a) tags that are from the base_url website.
-    index_links = bs_object \
-        .find(
-            "ul",
-            {"data-testid": "results"}
-        ) \
-        .findAll(
-            "a",
-            href=re.compile(f"{BASE_URL}/*") # the `*` denotes wildcard any
-        )
+        # find the unordered list (ul) elements which are the results, then
+        # find all href (a) tags that are from the base_url website.
+        index_links_section = bs_object.find("ul", {"data-testid": "results"})
+        
+        # If no listings are found, terminate the loop early
+        if index_links_section is None:
+            print("No more results, breaking the loop.")
+            break
+        
+        # Find all the href links in the result
+        index_links = index_links_section.findAll("a", href=re.compile(f"{BASE_URL}/*"))
 
-    for link in index_links:
-        # if its a property address, add it to the list
-        if 'address' in link['class']:
-            url_links.append(link['href'])
+        # If the page does not have any links, terminate the loop early
+        if not index_links:
+            print("No more links found, breaking the loop.")
+            break
+
+        for link in index_links:
+            # if its a property address, add it to the list
+            if 'address' in link['class']:
+                url_links.append(link['href'])
 
 # for each url, scrape some basic metadata
 pbar = tqdm(url_links[1:])
