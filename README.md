@@ -20,6 +20,11 @@
     - `model-XGBoost.ipynb`: This notebook implements an XGBoost model
     - `test.ipynb`: This notebook created a test dataset with all features in training data and an empty rental prices column.
 
+**Essential code**
+1. models: including models, evaluation and plots
+2. Analysis: contains notebooks related to specific analytical tasks
+
+Note: there are many assumptions made in external and internal dataset.
 
 **External Data Resources**
 
